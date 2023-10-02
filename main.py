@@ -92,10 +92,24 @@ def cbc_encrypt(plaintext, key, iv):
 
     return ciphertext
 
+def substitution_cipher_encrypt(text):
+    """Encrypt text using a simple substitution cipher."""
+    alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    shuffled_alphabet = list(alphabet)
+    random.shuffle(shuffled_alphabet)
+    
+    substitution_dict = dict(zip(alphabet, shuffled_alphabet))
+
+    encrypted_text = ''.join([substitution_dict.get(char, char) for char in text])
+    
+    return encrypted_text
+
 def combined_cipher_encrypt(plain_text, hill_key, playfair_key, polygram_mapping, cbc_key, cbc_iv):
+    substitution_cipher_text = substitution_cipher_encrypt(plain_text)
+
     hill_key_matrix = generate_key_matrix(hill_key, 3)
     playfair_matrix = prepare_playfair_key(playfair_key)
-    hill_cipher_text = hill_cipher_encrypt(plain_text, hill_key_matrix)
+    hill_cipher_text = hill_cipher_encrypt(substitution_cipher_text, hill_key_matrix)
     playfair_cipher_text = playfair_cipher_encrypt(hill_cipher_text, playfair_matrix)
     polygram_cipher_text = polygram_substitution_cipher_encrypt(playfair_cipher_text, polygram_mapping)
 
