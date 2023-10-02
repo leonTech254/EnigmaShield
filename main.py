@@ -1,9 +1,5 @@
+import random
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.preprocessing import LabelEncoder
-
 # Constants
 ALPHABET_SIZE = 26
 
@@ -37,26 +33,35 @@ def prepare_playfair_key(key):
     """Prepare the key matrix for Playfair Cipher."""
     key = key.upper().replace('J', 'I')
     unique_chars = sorted(set(key), key=key.index)
-    playfair_matrix = np.array(list(unique_chars)).reshape(5, 5)
+
+    # Pad the array if needed
+    while len(unique_chars) % 5 != 0:
+        unique_chars.append('X')
+
+    playfair_matrix = np.array(list(unique_chars)).reshape(5, -1)
     return playfair_matrix
+
 
 def playfair_cipher_encrypt(plain_text, key_matrix):
     """Encrypt a plain text using Playfair Cipher."""
     plain_text = plain_text.upper().replace('J', 'I')
     cipher_text = ""
     for i in range(0, len(plain_text), 2):
-        pair = plain_text[i:i+2]
+        pair = plain_text[i:i + 2]
+        
         row1, col1 = np.where(key_matrix == pair[0])
         row2, col2 = np.where(key_matrix == pair[1])
-        
-        if row1 == row2:  
-            cipher_text += key_matrix[row1, (col1 + 1) % 5][0] + key_matrix[row2, (col2 + 1) % 5][0]
-        elif col1 == col2:  
-            cipher_text += key_matrix[(row1 + 1) % 5, col1][0] + key_matrix[(row2 + 1) % 5, col2][0]
-        else:  
-            cipher_text += key_matrix[row1, col2][0] + key_matrix[row2, col1][0]
+
+        if row1.size > 0 and row2.size > 0 and col1.size > 0 and col2.size > 0:
+            if row1 == row2:
+                cipher_text += key_matrix[row1, (col1 + 1) % 5][0] + key_matrix[row2, (col2 + 1) % 5][0]
+            elif col1 == col2:
+                cipher_text += key_matrix[(row1 + 1) % 5, col1][0] + key_matrix[(row2 + 1) % 5, col2][0]
+            else:
+                cipher_text += key_matrix[row1, col2][0] + key_matrix[row2, col1][0]
 
     return cipher_text
+
 
 def polygram_substitution_cipher_encrypt(plain_text, polygram_mapping):
     cipher_text = ""
